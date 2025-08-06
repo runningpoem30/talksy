@@ -5,7 +5,7 @@ function Landing() {
 
   return (
     <div>
-    
+       <h1>hi there tailwwind</h1>
     </div>
   )
 }
