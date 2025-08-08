@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { useSocket } from '../context/SocketProvider';
+import { useNavigate } from 'react-router-dom';
 
 function Lobby() {
 
-  const [ form , setForm] = useState<any>({
+  const [ form , setForm] = useState({
     name : "",
     room : ""
   });
@@ -11,6 +12,7 @@ function Lobby() {
   const socket = useSocket()
   console.log(socket)
 
+  const navigate = useNavigate( )
 
 
   function handleChange(event){
@@ -21,19 +23,30 @@ function Lobby() {
   }
 
   async function handleSubmit(event){
-    event.preventDefault()
+    event.preventDefault();
+    socket.emit("room:join" , {name : form.name, room : form.room})
       try{
           setForm({
             name : "" ,
             room : ""
           })
-          socket.emit("room:join")
       }
       catch(err){
           console.log(err)
       }
-
   }
+
+  const handleJoinRoom = useCallback((data) => {
+    const {name , room} = data   
+    navigate(`/room/${room}`)
+  } ,[])
+
+useEffect(() => {
+  socket.on('room:join' , handleJoinRoom);
+  return () => {
+    socket.off('room:join' , handleJoinRoom);
+  };
+}, [handleJoinRoom]);
 
 
 

@@ -7,6 +7,21 @@ const io = new Server(5500, {
   }
 });
 
+const emailToSocketIdMap = new Map()
+const socketIdToEmailMap = new Map()
+
 io.on("connection", (socket) => {
   console.log("connection is established");
+  socket.on('room:join' , data =>{
+    const{name , room} = data
+    emailToSocketIdMap.set(name , socket.id);
+    socketIdToEmailMap.set(socket.id , name);
+    io.to(room).emit("user:joined" , {name , id:socket.id})
+    socket.join(room);
+    io.to(socket.id).emit('room:join' , data)
+  }); 
+
+  socket.on('user:call' , ({to , offer}) => {
+    io.to(to).emit("incoming:call" , {from : socket.id , offer })
+  })
 });
